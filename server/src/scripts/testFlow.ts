@@ -10,7 +10,7 @@ async function runE2ETest() {
   // Step 1: Health check
   console.log('[Step 1] Checking API Server Health...');
   const healthRes = await fetch(`${BASE_URL}/health`);
-  const healthData = await healthRes.json();
+  const healthData = (await healthRes.json()) as any;
   if (healthData.status === 'healthy') {
     console.log('✓ Health check passed:', healthData.name);
     passedSteps++;
@@ -21,7 +21,7 @@ async function runE2ETest() {
   // Step 2: Fetch products
   console.log('\n[Step 2] Fetching Products Catalog...');
   const prodRes = await fetch(`${BASE_URL}/products?limit=20`);
-  const prodData = await prodRes.json();
+  const prodData = (await prodRes.json()) as any;
   console.log(`✓ Fetched ${prodData.products?.length} products. Total in DB: ${prodData.pagination?.total}`);
   if (prodData.products?.length >= 12) {
     passedSteps++;
@@ -44,7 +44,7 @@ async function runE2ETest() {
       password: 'Customer@2026!',
     }),
   });
-  const loginData = await loginRes.json();
+  const loginData = (await loginRes.json()) as any;
   if (!loginData.success || !loginData.token) {
     throw new Error(`Customer login failed: ${loginData.message}`);
   }
@@ -65,7 +65,7 @@ async function runE2ETest() {
       qty: 1,
     }),
   });
-  const cartData = await cartRes.json();
+  const cartData = (await cartRes.json()) as any;
   console.log(`✓ Cart updated with ${cartData.cart?.items?.length} item(s)`);
   passedSteps++;
 
@@ -92,7 +92,7 @@ async function runE2ETest() {
     },
     body: JSON.stringify(codOrderPayload),
   });
-  const codData = await codRes.json();
+  const codData = (await codRes.json()) as any;
   if (!codData.success) {
     throw new Error(`COD Order failed: ${codData.message}`);
   }
@@ -123,7 +123,7 @@ async function runE2ETest() {
     },
     body: JSON.stringify(upiOrderPayload),
   });
-  const upiData = await upiRes.json();
+  const upiData = (await upiRes.json()) as any;
   const upiOrderId = upiData.order._id;
   console.log(`✓ UPI Order Initialized: #${upiOrderId} | Razorpay Order ID: ${upiData.razorpayOrderId}`);
 
@@ -141,7 +141,7 @@ async function runE2ETest() {
       razorpaySignature: 'sig_test_valid',
     }),
   });
-  const verifyData = await verifyRes.json();
+  const verifyData = (await verifyRes.json()) as any;
   if (!verifyData.success || verifyData.order.paymentStatus !== 'PAID') {
     throw new Error(`UPI verification failed: ${verifyData.message}`);
   }
@@ -153,7 +153,7 @@ async function runE2ETest() {
   const myOrdersRes = await fetch(`${BASE_URL}/orders/my-orders`, {
     headers: { Authorization: `Bearer ${customerToken}` },
   });
-  const myOrdersData = await myOrdersRes.json();
+  const myOrdersData = (await myOrdersRes.json()) as any;
   console.log(`✓ Customer has ${myOrdersData.orders?.length} active/past order(s).`);
   passedSteps++;
 
@@ -167,7 +167,7 @@ async function runE2ETest() {
       password: 'Admin@Traditions2026!',
     }),
   });
-  const adminLoginData = await adminLoginRes.json();
+  const adminLoginData = (await adminLoginRes.json()) as any;
   if (!adminLoginData.success || adminLoginData.user.role !== 'admin') {
     throw new Error('Admin login failed or user not admin');
   }
@@ -180,7 +180,7 @@ async function runE2ETest() {
   const statsRes = await fetch(`${BASE_URL}/admin/dashboard-stats`, {
     headers: { Authorization: `Bearer ${adminToken}` },
   });
-  const statsData = await statsRes.json();
+  const statsData = (await statsRes.json()) as any;
   console.log(`✓ Dashboard Stats: Total Orders: ${statsData.stats.totalOrders} | Revenue: ₹${statsData.stats.totalRevenue} | UPI Count: ${statsData.stats.paymentSplit.upi} | COD Count: ${statsData.stats.paymentSplit.cod}`);
   passedSteps++;
 
@@ -197,7 +197,7 @@ async function runE2ETest() {
       price: sampleProduct1.price,
     }),
   });
-  const invData = await invRes.json();
+  const invData = (await invRes.json()) as any;
   console.log(`✓ Stock updated to ${invData.product.stock} units for "${invData.product.name}"`);
   passedSteps++;
 
@@ -216,7 +216,7 @@ async function runE2ETest() {
       note: 'Handed over to BlueDart courier hub',
     }),
   });
-  const statusData = await statusRes.json();
+  const statusData = (await statusRes.json()) as any;
   console.log(`✓ Order #${codOrderId} status updated to: ${statusData.order.status} (Courier: ${statusData.order.courier}, AWB: ${statusData.order.trackingId})`);
   passedSteps++;
 
@@ -226,7 +226,7 @@ async function runE2ETest() {
     method: 'PATCH',
     headers: { Authorization: `Bearer ${adminToken}` },
   });
-  const codPaidData = await codPaidRes.json();
+  const codPaidData = (await codPaidRes.json()) as any;
   console.log(`✓ COD Order Payment status updated to: ${codPaidData.order.paymentStatus}`);
   passedSteps++;
 
@@ -235,7 +235,7 @@ async function runE2ETest() {
   const customersRes = await fetch(`${BASE_URL}/admin/customers`, {
     headers: { Authorization: `Bearer ${adminToken}` },
   });
-  const customersData = await customersRes.json();
+  const customersData = (await customersRes.json()) as any;
   console.log(`✓ Admin Customers Directory: ${customersData.customers?.length} patron profile(s) loaded.`);
   passedSteps++;
 
@@ -248,4 +248,3 @@ runE2ETest().catch((err) => {
   console.error('\n❌ E2E TEST FAILED:', err);
   process.exit(1);
 });
-

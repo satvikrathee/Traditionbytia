@@ -54,11 +54,15 @@ export const initSocket = (httpServer: HttpServer): SocketIOServer => {
   return io;
 };
 
-export const getIO = (): SocketIOServer => {
+export const getSocket = (): SocketIOServer => {
   if (!io) {
     throw new Error('Socket.io not initialized!');
   }
   return io;
+};
+
+export const getIO = (): SocketIOServer => {
+  return getSocket();
 };
 
 // Fallback / Direct event emitters (called after controller updates)
