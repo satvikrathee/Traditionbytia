@@ -1,0 +1,49 @@
+# Node & Dependencies
+node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Production Build Outputs
+dist/
+**/dist/
+build/
+**/build/
+.next/
+**/.next/
+out/
+**/out/
+
+# Local Data & Database dumps
+server/data/
+server/uploads/
+uploads/
+**/uploads/
+*.sqlite
+*.log
+task-*.log
+
+# Sensitive Environment Configurations
+.env
+.env*
+*.env
+**/.env
+**/.env.*
+!.env.example
+!**/.env.example
+
+# OS & Editor Files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary & Cache
+.cache/
+.turbo/
+.vercel/
+coverage/

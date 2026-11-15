@@ -1,0 +1,25 @@
+{
+  "name": "traditions-by-tiya",
+  "version": "1.0.0",
+  "description": "Traditions By Tiya - Royal Handcrafted Indian Ethnic Wear E-Commerce Platform",
+  "scripts": {
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "build:server": "cd server && npm run build",
+    "build:client": "cd client && npm run build",
+    "seed": "cd server && npm run seed",
+    "create-admin": "cd server && npm run create-admin",
+    "test:e2e": "cd server && npm run test:e2e"
+  },
+  "keywords": [
+    "nextjs",
+    "express",
+    "mongodb",
+    "socket.io",
+    "ecommerce",
+    "traditional-wear",
+    "handcrafted"
+  ],
+  "author": "Traditions By Tiya Team"
+}
+
