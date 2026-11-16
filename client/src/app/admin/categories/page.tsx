@@ -20,6 +20,8 @@ import {
   Layers,
   Search,
   ExternalLink,
+  UploadCloud,
+  ImageIcon,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -37,6 +39,8 @@ export default function AdminCategoriesPage() {
   const [formIsActive, setFormIsActive] = useState<boolean>(true);
   const [formOrder, setFormOrder] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [uploadingImage, setUploadingImage] = useState<boolean>(false);
+  const [showUrlInput, setShowUrlInput] = useState<boolean>(false);
 
   // Delete Confirmation State
   const [deletingCategory, setDeletingCategory] = useState<Category | null>(null);
@@ -102,6 +106,7 @@ export default function AdminCategoriesPage() {
     setFormImage('');
     setFormIsActive(true);
     setFormOrder(categories.length + 1);
+    setShowUrlInput(false);
     setIsModalOpen(true);
   };
 
@@ -112,7 +117,43 @@ export default function AdminCategoriesPage() {
     setFormImage(cat.image || '');
     setFormIsActive(cat.isActive);
     setFormOrder(cat.order || 0);
+    setShowUrlInput(false);
     setIsModalOpen(true);
+  };
+
+  const handleImageFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file (PNG, JPG, WEBP)');
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Image size must be under 10MB');
+      return;
+    }
+
+    setUploadingImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const res = await api.post('/upload', formData);
+      if (res.success && res.image?.url) {
+        setFormImage(res.image.url);
+        toast.success('Category image uploaded successfully!');
+      } else {
+        throw new Error(res.message || 'Image upload failed');
+      }
+    } catch (err: any) {
+      console.error('Image upload error:', err);
+      toast.error(err.message || 'Image upload failed');
+    } finally {
+      setUploadingImage(false);
+      e.target.value = '';
+    }
   };
 
   const closeModal = () => {
@@ -349,6 +390,9 @@ export default function AdminCategoriesPage() {
                         src={cat.image}
                         alt={cat.name}
                         className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-gold-600 bg-cream-50">
@@ -496,20 +540,112 @@ export default function AdminCategoriesPage() {
                 />
               </div>
 
+              {/* Category Image Upload */}
               <div>
-                <label className="text-xs uppercase tracking-wider font-bold text-maroon-900 block mb-1">
-                  Category Image URL (Optional)
-                </label>
-                <input
-                  type="url"
-                  value={formImage}
-                  onChange={(e) => setFormImage(e.target.value)}
-                  placeholder="https://images.unsplash.com/..."
-                  className="w-full px-3.5 py-2.5 bg-cream-50 border border-cream-400 rounded-xl text-xs text-charcoal focus:outline-none focus:ring-2 focus:ring-maroon-500"
-                />
-                {formImage && (
-                  <div className="mt-2 w-16 h-16 rounded-xl overflow-hidden border border-cream-300">
-                    <img src={formImage} alt="Preview" className="w-full h-full object-cover" />
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs uppercase tracking-wider font-bold text-maroon-900">
+                    Category Image
+                  </label>
+                  {formImage && (
+                    <button
+                      type="button"
+                      onClick={() => setFormImage('')}
+                      className="text-[11px] text-red-600 hover:text-red-800 flex items-center gap-1 font-semibold"
+                    >
+                      <X className="w-3 h-3" /> Remove Image
+                    </button>
+                  )}
+                </div>
+
+                {formImage ? (
+                  <div className="rounded-2xl border-2 border-gold-400/40 bg-cream-50/70 p-3 shadow-xs flex items-center gap-4">
+                    <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-cream-200 border border-cream-300 flex-shrink-0">
+                      <img
+                        src={formImage}
+                        alt="Category Preview"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0 space-y-1.5">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-green-800 bg-green-50 px-2 py-0.5 rounded border border-green-200">
+                        <Check className="w-3 h-3 text-green-600" /> Image Ready
+                      </span>
+                      <p className="text-[11px] text-charcoal-muted truncate font-mono">
+                        {formImage.startsWith('data:') ? 'High-Res Upload Ready' : formImage}
+                      </p>
+                      <label className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-maroon-700 hover:bg-maroon-800 text-cream-100 text-xs font-bold rounded-lg cursor-pointer transition-colors shadow-xs">
+                        <UploadCloud className="w-3.5 h-3.5 text-gold-400" />
+                        {uploadingImage ? 'Uploading...' : 'Replace Image'}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageFileUpload}
+                          disabled={uploadingImage}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+                  </div>
+                ) : (
+                  <label className={`border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all block ${
+                    uploadingImage
+                      ? 'border-maroon-500 bg-maroon-50/40'
+                      : 'border-cream-400 hover:border-maroon-500 bg-cream-50/40 hover:bg-cream-50'
+                  }`}>
+                    {uploadingImage ? (
+                      <div className="py-2">
+                        <div className="w-7 h-7 border-3 border-maroon-600 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                        <span className="text-xs font-bold text-maroon-800 block">
+                          Uploading Image to Cloud Storage...
+                        </span>
+                        <span className="text-[10px] text-charcoal-muted block mt-0.5">
+                          Optimizing image dimensions &amp; format
+                        </span>
+                      </div>
+                    ) : (
+                      <>
+                        <UploadCloud className="w-9 h-9 text-maroon-600 mx-auto mb-2" />
+                        <span className="text-xs font-bold text-maroon-900 block">
+                          Click to Upload Category Image
+                        </span>
+                        <span className="text-[11px] text-charcoal-muted block mt-1">
+                          PNG, JPG, or WEBP up to 10MB (Square or 4:3 recommended)
+                        </span>
+                      </>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageFileUpload}
+                      disabled={uploadingImage}
+                      className="hidden"
+                    />
+                  </label>
+                )}
+
+                {/* Optional toggle to paste a direct image URL */}
+                <div className="mt-2 text-right">
+                  <button
+                    type="button"
+                    onClick={() => setShowUrlInput(!showUrlInput)}
+                    className="text-[11px] text-maroon-700 hover:text-maroon-900 underline font-semibold"
+                  >
+                    {showUrlInput ? 'Hide Image URL input' : 'Or paste an Image URL instead'}
+                  </button>
+                </div>
+
+                {showUrlInput && (
+                  <div className="mt-2 p-3 bg-cream-50 rounded-xl border border-cream-300 space-y-1">
+                    <input
+                      type="url"
+                      value={formImage}
+                      onChange={(e) => setFormImage(e.target.value)}
+                      placeholder="https://images.unsplash.com/..."
+                      className="w-full px-3 py-2 bg-white border border-cream-400 rounded-lg text-xs text-charcoal focus:outline-none focus:ring-1 focus:ring-maroon-500"
+                    />
+                    <p className="text-[10px] text-charcoal-muted">
+                      Direct web links will be saved as the category image.
+                    </p>
                   </div>
                 )}
               </div>
