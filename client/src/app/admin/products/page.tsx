@@ -42,12 +42,23 @@ export default function AdminProductsPage() {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [uploadingImage, setUploadingImage] = useState<boolean>(false);
 
-  const categories = [
+  const [categories, setCategories] = useState<string[]>([
     'Festive Ensembles',
     'Lehengas & Kurtas',
     'Heritage Jewellery',
     'Handloom Dupattas',
-  ];
+  ]);
+
+  const fetchCategories = async () => {
+    try {
+      const res = await api.get('/categories');
+      if (res.success && res.categories && res.categories.length > 0) {
+        setCategories(res.categories.map((c: any) => c.name));
+      }
+    } catch (err) {
+      console.error('Failed to fetch categories in products admin:', err);
+    }
+  };
 
   const fetchProducts = async () => {
     try {
@@ -64,6 +75,7 @@ export default function AdminProductsPage() {
 
   useEffect(() => {
     fetchProducts();
+    fetchCategories();
 
     const socket = getSocket();
     const handleProductUpdate = (data: { product: any; changeType: string }) => {
@@ -82,9 +94,20 @@ export default function AdminProductsPage() {
       }
     };
 
+    const handleCategoryRefresh = () => {
+      fetchCategories();
+    };
+
+    socket.on('category:created', handleCategoryRefresh);
+    socket.on('category:updated', handleCategoryRefresh);
+    socket.on('category:deleted', handleCategoryRefresh);
+
     socket.on('product:updated', handleProductUpdate);
     return () => {
       socket.off('product:updated', handleProductUpdate);
+      socket.off('category:created', handleCategoryRefresh);
+      socket.off('category:updated', handleCategoryRefresh);
+      socket.off('category:deleted', handleCategoryRefresh);
     };
   }, []);
 

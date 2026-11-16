@@ -23,13 +23,27 @@ function ShopContent() {
   const [inStockOnly, setInStockOnly] = useState<boolean>(false);
   const [mobileFilterOpen, setMobileFilterOpen] = useState<boolean>(false);
 
-  const categories = [
+  const [categories, setCategories] = useState<string[]>([
     'All',
     'Festive Ensembles',
     'Lehengas & Kurtas',
     'Heritage Jewellery',
     'Handloom Dupattas',
-  ];
+  ]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await api.get('/categories');
+        if (res.success && res.categories && res.categories.length > 0) {
+          setCategories(['All', ...res.categories.map((c: any) => c.name)]);
+        }
+      } catch (e) {
+        console.error('Failed to load shop categories:', e);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);

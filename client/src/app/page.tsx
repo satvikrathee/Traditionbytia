@@ -26,19 +26,56 @@ export default function HomePage() {
   const [bestSellers, setBestSellers] = useState<Product[]>([]);
   const [recentReviews, setRecentReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [categories, setCategories] = useState([
+    {
+      title: 'Festive Ensembles',
+      subtitle: 'Hand-tailored Traditional Silhouettes',
+      image: 'https://images.unsplash.com/photo-1546804784-896d0dca3805?auto=format&fit=crop&w=800&q=80',
+      href: '/shop?category=Festive+Ensembles',
+    },
+    {
+      title: 'Lehengas & Kurtas',
+      subtitle: 'Zardozi Velvet & Chikankari Sets',
+      image: 'https://images.unsplash.com/photo-1566737236500-c8ac43014a67?auto=format&fit=crop&w=800&q=80',
+      href: '/shop?category=Lehengas+%26+Kurtas',
+    },
+    {
+      title: 'Heritage Jewellery',
+      subtitle: 'Temple 22K Gold & Jadau Kundan',
+      image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80',
+      href: '/shop?category=Heritage+Jewellery',
+    },
+    {
+      title: 'Handloom Shawls',
+      subtitle: 'Kashmiri Sozni Pashmina & Stoles',
+      image: 'https://images.unsplash.com/photo-1607344645866-009c320c5ab8?auto=format&fit=crop&w=800&q=80',
+      href: '/shop?category=Handloom+Dupattas',
+    },
+  ]);
 
   const fetchFeaturedProducts = async () => {
     try {
-      const [arrivalsRes, bestRes, reviewsRes] = await Promise.all([
+      const [arrivalsRes, bestRes, reviewsRes, catRes] = await Promise.all([
         api.get('/products?isNewArrival=true&limit=4'),
         api.get('/products?isBestSeller=true&limit=4'),
         api.get('/reviews/recent').catch(() => ({ success: false, reviews: [] })),
+        api.get('/categories').catch(() => ({ success: false, categories: [] })),
       ]);
 
       if (arrivalsRes.success) setNewArrivals(arrivalsRes.products);
       if (bestRes.success) setBestSellers(bestRes.products);
       if (reviewsRes.success && reviewsRes.reviews?.length > 0) {
         setRecentReviews(reviewsRes.reviews);
+      }
+      if (catRes.success && catRes.categories?.length > 0) {
+        setCategories(
+          catRes.categories.map((c: any) => ({
+            title: c.name,
+            subtitle: c.description || 'Handcrafted Luxury Collection',
+            image: c.image || 'https://images.unsplash.com/photo-1546804784-896d0dca3805?auto=format&fit=crop&w=800&q=80',
+            href: `/shop?category=${encodeURIComponent(c.name)}`,
+          }))
+        );
       }
     } catch (err) {
       console.error('Failed to load home products:', err);
@@ -66,33 +103,6 @@ export default function HomePage() {
       socket.off('product:updated', handleProductUpdate);
     };
   }, []);
-
-  const categories = [
-    {
-      title: 'Festive Ensembles',
-      subtitle: 'Hand-tailored Traditional Silhouettes',
-      image: 'https://images.unsplash.com/photo-1546804784-896d0dca3805?auto=format&fit=crop&w=800&q=80',
-      href: '/shop?category=Festive+Ensembles',
-    },
-    {
-      title: 'Lehengas & Kurtas',
-      subtitle: 'Zardozi Velvet & Chikankari Sets',
-      image: 'https://images.unsplash.com/photo-1566737236500-c8ac43014a67?auto=format&fit=crop&w=800&q=80',
-      href: '/shop?category=Lehengas+%26+Kurtas',
-    },
-    {
-      title: 'Heritage Jewellery',
-      subtitle: 'Temple 22K Gold & Jadau Kundan',
-      image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80',
-      href: '/shop?category=Heritage+Jewellery',
-    },
-    {
-      title: 'Handloom Shawls',
-      subtitle: 'Kashmiri Sozni Pashmina & Stoles',
-      image: 'https://images.unsplash.com/photo-1607344645866-009c320c5ab8?auto=format&fit=crop&w=800&q=80',
-      href: '/shop?category=Handloom+Dupattas',
-    },
-  ];
 
   const testimonials = [
     {

@@ -18,6 +18,7 @@ import {
   X,
   LogOut,
   QrCode,
+  Tag,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -77,6 +78,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const navItems = [
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
     { name: 'Products', href: '/admin/products', icon: Package },
+    { name: 'Categories', href: '/admin/categories', icon: Tag },
     { name: 'Inventory (Inline)', href: '/admin/inventory', icon: Layers },
     { name: 'Orders & Shipments', href: '/admin/orders', icon: ShoppingBag },
     { name: 'Customers', href: '/admin/customers', icon: Users },

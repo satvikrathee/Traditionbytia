@@ -43,6 +43,7 @@ Thumbs.db
 *.swo
 
 # Temporary & Cache
+*.tsbuildinfo
 .cache/
 .turbo/
 .vercel/

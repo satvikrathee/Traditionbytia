@@ -133,5 +133,18 @@ export interface Review {
   updatedAt: string;
 }
 
+export interface Category {
+  _id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  image?: string;
+  isActive: boolean;
+  order?: number;
+  productCount?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 
 
